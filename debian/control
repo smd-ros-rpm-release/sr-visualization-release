@@ -1,0 +1,12 @@
+Source: ros-hydro-sr-visualization
+Section: misc
+Priority: extra
+Maintainer: Shadow Robot's software team <software@shadowrobot.com>
+Build-Depends: debhelper (>= 7.0.50~), ros-hydro-catkin
+Homepage: http://ros.org/wiki/sr_visualization
+Standards-Version: 3.9.2
+
+Package: ros-hydro-sr-visualization
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-hydro-sr-gui-bootloader, ros-hydro-sr-gui-change-controllers, ros-hydro-sr-gui-controller-tuner, ros-hydro-sr-gui-grasp-controller, ros-hydro-sr-gui-hand-calibration, ros-hydro-sr-gui-joint-slider, ros-hydro-sr-gui-motor-resetter, ros-hydro-sr-gui-movement-recorder, ros-hydro-sr-gui-self-test, ros-hydro-sr-visualization-icons
+Description: This stack contains the different gui and gui plugins used with the shadow robot stacks.
