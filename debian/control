@@ -1,0 +1,12 @@
+Source: ros-hydro-sr-gui-muscle-driver-bootloader
+Section: misc
+Priority: extra
+Maintainer: Shadow Robot's software team <software@shadowrobot.com>
+Build-Depends: debhelper (>= 7.0.50~), ros-hydro-catkin, ros-hydro-diagnostic-msgs, ros-hydro-rospy, ros-hydro-rqt-gui, ros-hydro-rqt-gui-py, ros-hydro-sr-robot-msgs, ros-hydro-sr-visualization-icons, ros-hydro-std-msgs, ros-hydro-std-srvs
+Homepage: http://ros.org/wiki/sr_gui_muscle_driver_bootloader
+Standards-Version: 3.9.2
+
+Package: ros-hydro-sr-gui-muscle-driver-bootloader
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-hydro-diagnostic-msgs, ros-hydro-rospy, ros-hydro-rqt-gui, ros-hydro-rqt-gui-py, ros-hydro-sr-robot-msgs, ros-hydro-sr-visualization-icons, ros-hydro-std-msgs, ros-hydro-std-srvs
+Description: A GUI plugin for bootloading the muscle drivers on the etherCAT muscle shadow hand.
