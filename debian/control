@@ -1,0 +1,12 @@
+Source: ros-indigo-sr-gui-self-test
+Section: misc
+Priority: extra
+Maintainer: Shadow Robot's software team <software@shadowrobot.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin, ros-indigo-diagnostic-msgs, ros-indigo-rospy, ros-indigo-rqt-gui, ros-indigo-rqt-gui-py, ros-indigo-sr-robot-msgs, ros-indigo-sr-visualization-icons
+Homepage: http://ros.org/wiki/sr_gui_self_test
+Standards-Version: 3.9.2
+
+Package: ros-indigo-sr-gui-self-test
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-diagnostic-msgs, ros-indigo-rospy, ros-indigo-rqt-gui, ros-indigo-rqt-gui-py, ros-indigo-sr-robot-msgs, ros-indigo-sr-visualization-icons
+Description: A GUI plugin for running self diagnostics of a robot.
