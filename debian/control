@@ -1,0 +1,12 @@
+Source: ros-indigo-sr-visualization
+Section: misc
+Priority: extra
+Maintainer: Shadow Robot's software team <software@shadowrobot.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin
+Homepage: http://ros.org/wiki/sr_visualization
+Standards-Version: 3.9.2
+
+Package: ros-indigo-sr-visualization
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-sr-gui-bootloader, ros-indigo-sr-gui-change-controllers, ros-indigo-sr-gui-change-muscle-controllers, ros-indigo-sr-gui-controller-tuner, ros-indigo-sr-gui-grasp-controller, ros-indigo-sr-gui-hand-calibration, ros-indigo-sr-gui-joint-slider, ros-indigo-sr-gui-motor-resetter, ros-indigo-sr-gui-movement-recorder, ros-indigo-sr-gui-muscle-driver-bootloader, ros-indigo-sr-gui-self-test, ros-indigo-sr-visualization-icons
+Description: This stack contains the different gui plugins used with the shadow robot stacks.
