@@ -29,16 +29,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-import os, rospy, rospkg
+import os
+import rospy
+import rospkg
 
 from time import sleep
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 
-from QtCore import QEvent, QObject, Qt, QTimer, Slot
-from QtGui import QShortcut, QMessageBox, QWidget, QIcon
-from pr2_mechanism_msgs.srv import ListControllers, SwitchController, LoadController
+from QtGui import QMessageBox, QWidget, QIcon
+from controller_manager_msgs.srv import ListControllers, SwitchController, LoadController
 from sr_robot_msgs.srv import ChangeControlType
 from sr_robot_msgs.msg import ControlType
 
@@ -50,11 +51,18 @@ class SrGuiChangeControllers(Plugin):
     CONTROLLER_ON_ICON = QIcon(os.path.join(ICON_DIR, 'green.png'))
     CONTROLLER_OFF_ICON = QIcon(os.path.join(ICON_DIR, 'red.png'))
 
-    controllers = {"effort": ["sh_ffj0_effort_controller", "sh_ffj3_effort_controller", "sh_ffj4_effort_controller", "sh_mfj0_effort_controller", "sh_mfj3_effort_controller", "sh_mfj4_effort_controller", "sh_rfj0_effort_controller", "sh_rfj3_effort_controller", "sh_rfj4_effort_controller", "sh_lfj0_effort_controller", "sh_lfj3_effort_controller", "sh_lfj4_effort_controller", "sh_lfj5_effort_controller", "sh_thj1_effort_controller", "sh_thj2_effort_controller", "sh_thj3_effort_controller", "sh_thj4_effort_controller", "sh_thj5_effort_controller", "sh_wrj1_effort_controller", "sh_wrj2_effort_controller"],
-                   "position": ["sh_ffj0_position_controller", "sh_ffj3_position_controller", "sh_ffj4_position_controller", "sh_mfj0_position_controller", "sh_mfj3_position_controller", "sh_mfj4_position_controller", "sh_rfj0_position_controller", "sh_rfj3_position_controller", "sh_rfj4_position_controller", "sh_lfj0_position_controller", "sh_lfj3_position_controller", "sh_lfj4_position_controller", "sh_lfj5_position_controller", "sh_thj1_position_controller", "sh_thj2_position_controller", "sh_thj3_position_controller", "sh_thj4_position_controller", "sh_thj5_position_controller", "sh_wrj1_position_controller", "sh_wrj2_position_controller"],
-                   "mixed": ["sh_ffj0_mixed_position_velocity_controller", "sh_ffj3_mixed_position_velocity_controller", "sh_ffj4_mixed_position_velocity_controller", "sh_mfj0_mixed_position_velocity_controller", "sh_mfj3_mixed_position_velocity_controller", "sh_mfj4_mixed_position_velocity_controller", "sh_rfj0_mixed_position_velocity_controller", "sh_rfj3_mixed_position_velocity_controller", "sh_rfj4_mixed_position_velocity_controller", "sh_lfj0_mixed_position_velocity_controller", "sh_lfj3_mixed_position_velocity_controller", "sh_lfj4_mixed_position_velocity_controller", "sh_lfj5_mixed_position_velocity_controller", "sh_thj1_mixed_position_velocity_controller", "sh_thj2_mixed_position_velocity_controller", "sh_thj3_mixed_position_velocity_controller", "sh_thj4_mixed_position_velocity_controller", "sh_thj5_mixed_position_velocity_controller", "sh_wrj1_mixed_position_velocity_controller", "sh_wrj2_mixed_position_velocity_controller"],
-                   "velocity": ["sh_ffj0_velocity_controller", "sh_ffj3_velocity_controller", "sh_ffj4_velocity_controller", "sh_mfj0_velocity_controller", "sh_mfj3_velocity_controller", "sh_mfj4_velocity_controller", "sh_rfj0_velocity_controller", "sh_rfj3_velocity_controller", "sh_rfj4_velocity_controller", "sh_lfj0_velocity_controller", "sh_lfj3_velocity_controller", "sh_lfj4_velocity_controller", "sh_lfj5_velocity_controller", "sh_thj1_velocity_controller", "sh_thj2_velocity_controller", "sh_thj3_velocity_controller", "sh_thj4_velocity_controller", "sh_thj5_velocity_controller", "sh_wrj1_velocity_controller", "sh_wrj2_velocity_controller"],
+    joints = ["ffj0", "ffj3", "ffj4",
+              "mfj0", "mfj3", "mfj4",
+              "rfj0", "rfj3", "rfj4",
+              "lfj0", "lfj3", "lfj4", "lfj5",
+              "thj1", "thj2", "thj3", "thj4", "thj5",
+              "wrj1", "wrj2"]
+    controllers = {"effort": ["sh_{}_effort_controller".format(joint) for joint in joints],
+                   "position": ["sh_{}_position_controller".format(joint) for joint in joints],
+                   "mixed": ["sh_{}_mixed_position_velocity_controller".format(joint) for joint in joints],
+                   "velocity": ["sh_{}_velocity_controller".format(joint) for joint in joints],
                    "stop": []}
+    managed_controllers = [cont for type_conts in controllers.itervalues() for cont in type_conts]
 
     def __init__(self, context):
         super(SrGuiChangeControllers, self).__init__(context)
@@ -67,7 +75,7 @@ class SrGuiChangeControllers(Plugin):
         loadUi(ui_file, self._widget)
         self._widget.setObjectName('SrChangeControllersUi')
         context.add_widget(self._widget)
-        
+
         #Setting the initial state of the controller buttons
         self._widget.btn_mixed.setIcon(self.CONTROLLER_OFF_ICON)
         self._widget.btn_mixed.setChecked(False)
@@ -84,7 +92,7 @@ class SrGuiChangeControllers(Plugin):
         self._widget.btn_position.pressed.connect(self.on_position_ctrl_clicked_)
         self._widget.btn_mixed.pressed.connect(self.on_mixed_ctrl_clicked_)
         self._widget.btn_velocity.pressed.connect(self.on_velocity_ctrl_clicked_)
-                
+
         #check the correct control box, depending on PWM_CONTROL env variable
         if os.environ.get('PWM_CONTROL') in [None, '0']:
             self._widget.radioButtonTorque.setChecked(True)
@@ -92,7 +100,7 @@ class SrGuiChangeControllers(Plugin):
         else:
             self._widget.radioButtonTorque.setChecked(False)
             self._widget.radioButtonPWM.setChecked(True)
-        
+
         self._widget.radioButtonTorque.toggled.connect(self.on_control_mode_radio_button_toggled_)
         self._widget.radioButtonPWM.toggled.connect(self.on_control_mode_radio_button_toggled_)
 
@@ -110,7 +118,7 @@ class SrGuiChangeControllers(Plugin):
                 change_type_msg.control_type = ControlType.PWM
                 rospy.loginfo("Change Control mode to PWM")
             self.change_force_ctrl_type(change_type_msg)
-        
+
     def on_stop_ctrl_clicked_(self):
         """
         Stop controller
@@ -195,8 +203,6 @@ class SrGuiChangeControllers(Plugin):
             rospy.loginfo("Mixed checked: " + str(self._widget.btn_mixed.isChecked()))
             self.change_ctrl( "stop" )
         self._widget.btn_mixed.setEnabled(True)
-            
-            
 
     def on_velocity_ctrl_clicked_(self):
         """
@@ -213,49 +219,45 @@ class SrGuiChangeControllers(Plugin):
             self._widget.btn_mixed.setIcon(self.CONTROLLER_OFF_ICON)
             self._widget.btn_mixed.setChecked(False)
             rospy.loginfo("Velocity checked: " + str(self._widget.btn_velocity.isChecked()))
-            self.change_ctrl( "velocity" )            
+            self.change_ctrl( "velocity" )
         else:
             self._widget.btn_velocity.setIcon(self.CONTROLLER_OFF_ICON)
             self._widget.btn_velocity.setChecked(False)
             rospy.loginfo("Velocity checked: " + str(self._widget.btn_velocity.isChecked()))
             self.change_ctrl( "stop" )
         self._widget.btn_velocity.setEnabled(True)
-            
-
 
     def change_ctrl(self, controller):
         """
         Switch the current controller
         """
         success = True
-        list_controllers = rospy.ServiceProxy('pr2_controller_manager/list_controllers', ListControllers)
+        list_controllers = rospy.ServiceProxy('controller_manager/list_controllers', ListControllers)
         try:
             resp1 = list_controllers()
         except rospy.ServiceException:
             success = False
 
         if success:
-            current_controllers = []
-            all_loaded_controllers = resp1.controllers
-            for state,tmp_contrl in zip(resp1.state,resp1.controllers):
-                if state == "running":
-                    current_controllers.append(tmp_contrl)
+            controllers_to_stop = [c.name for c in resp1.controller if c.state == "running" and c.name in self.managed_controllers]
+            all_loaded_controllers = [c.name for c in resp1.controller]
 
             controllers_to_start = self.controllers[controller]
 
-            load_controllers = rospy.ServiceProxy('pr2_controller_manager/load_controller', LoadController)
+            load_controllers = None
             for load_control in controllers_to_start:
                 if load_control not in all_loaded_controllers:
                     try:
+                        load_controllers = rospy.ServiceProxy('controller_manager/load_controller', LoadController)
                         resp1 = load_controllers(load_control)
                     except rospy.ServiceException:
                         success = False
                     if not resp1.ok:
                         success = False
 
-            switch_controllers = rospy.ServiceProxy('pr2_controller_manager/switch_controller', SwitchController)
+            switch_controllers = rospy.ServiceProxy('controller_manager/switch_controller', SwitchController)
             try:
-                resp1 = switch_controllers(controllers_to_start, current_controllers, SwitchController._request_class.BEST_EFFORT)
+                resp1 = switch_controllers(controllers_to_start, controllers_to_stop, SwitchController._request_class.BEST_EFFORT)
             except rospy.ServiceException:
                 success = False
 
@@ -267,10 +269,11 @@ class SrGuiChangeControllers(Plugin):
 
     def change_force_ctrl_type(self, chng_type_msg):
         """
-        Calls the service (realtime_loop/change_control_type) that allows to tell the driver (sr_robot_lib) which type of force control has to be sent to the motor:
+        Calls the service (realtime_loop/change_control_type) that allows to tell the driver (sr_robot_lib)
+        which type of force control has to be sent to the motor:
             - torque demand (sr_robot_msgs::ControlType::FORCE)
             - PWM (sr_robot_msgs::ControlType::PWM)
-        it will deactivate the Effort, Position, Mixed and Velocity buttons for 3 secs to allow hardware controllers to be updated 
+        it will deactivate the Effort, Position, Mixed and Velocity buttons for 3 secs to allow hardware controllers to be updated
         """
         success = True
         change_control_type = rospy.ServiceProxy('realtime_loop/change_control_type', ChangeControlType)

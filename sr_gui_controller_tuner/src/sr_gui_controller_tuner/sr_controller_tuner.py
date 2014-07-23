@@ -19,11 +19,10 @@
 import rospy
 
 from xml.etree import ElementTree as ET
-from pr2_mechanism_msgs.srv import ListControllers
+from controller_manager_msgs.srv import ListControllers
 
 from sr_robot_msgs.srv import ForceController, SetEffortControllerGains, SetMixedPositionVelocityPidGains, SetPidGains
 from sr_gui_controller_tuner.pid_loader_and_saver import PidLoader, PidSaver
-import unicodedata
 
 class CtrlSettings(object):
     """
@@ -58,8 +57,7 @@ class CtrlSettings(object):
         self.nb_columns = len(self.headers)
 
         self.hand_item = ["Hand"]
-        for i in range(0, self.nb_columns - 1):
-            self.hand_item.append("")
+        self.hand_item.extend((self.nb_columns - 1)*[""])
 
         #read the fingers and the motors from the xml file
         self.fingers = []
@@ -67,15 +65,13 @@ class CtrlSettings(object):
         all_fingers = xml_tree.find("fingers")
         for finger in all_fingers.findall("finger"):
             finger_row = [ finger.attrib['name'] ]
-            for i in range(0, self.nb_columns - 1):
-                finger_row.append("")
+            finger_row.extend((self.nb_columns - 1)*[""])
             self.fingers.append( finger_row )
 
             motors_for_finger = []
             for motor in finger.findall("motor"):
                 motor_row = [ "", motor.attrib['name'] ]
-                for i in range(0, self.nb_columns - 2):
-                    motor_row.append("")
+                motor_row.extend((self.nb_columns - 1)*[""])
                 motors_for_finger.append( motor_row )
 
             self.motors.append( motors_for_finger )
@@ -86,41 +82,41 @@ class SrControllerTunerApp(object):
     Handles loading, saving and setting of controller settings
     """
     CONTROLLER_MANAGER_DETECTION_TIMEOUT = 3.0
-    
+
     def __init__(self, xml_path):
         self.xml_path = xml_path
         self.all_controller_types = ["Motor Force", "Position", "Velocity",
                                      "Mixed Position/Velocity", "Effort", "Muscle Position"]
         self.pid_loader = PidLoader()
-        
+
         self.edit_only_mode = False
         self.control_mode = "FORCE"
-        
+
 
     def get_ctrls(self):
         """
         Retrieve currentlly running controllers
         return ["Motor Force", "Position"]
         """
-        
+
         running_ctrls = []
 
         try:
-            rospy.wait_for_service('pr2_controller_manager/list_controllers', self.CONTROLLER_MANAGER_DETECTION_TIMEOUT)
-        
-            controllers = rospy.ServiceProxy('pr2_controller_manager/list_controllers', ListControllers)
+            rospy.wait_for_service('controller_manager/list_controllers', self.CONTROLLER_MANAGER_DETECTION_TIMEOUT)
+
+            controllers = rospy.ServiceProxy('controller_manager/list_controllers', ListControllers)
             resp = None
             try:
                 resp = controllers()
             except rospy.ServiceException, e:
                 rospy.logerr( "Service did not process request: %s"%str(e) )
-            
+
             running_ctrls.append("Motor Force")
             if resp != None:
-                for state,controller in zip(resp.state, resp.controllers):
-                    if state == "running":
-                        split = controller.split("_")
-                        ctrl_type_tmp = split[2]
+                for controller in resp.controller:
+                    if controller.state == "running":
+                        splitted = controller.name.split("_")
+                        ctrl_type_tmp = splitted[2]
                         for defined_ctrl_type in self.all_controller_types:
                             if ctrl_type_tmp.lower() in defined_ctrl_type.lower():
                                 running_ctrls.append(defined_ctrl_type)
@@ -140,9 +136,9 @@ class SrControllerTunerApp(object):
             #In edit_only_mode all the controllers are available for editing
             for defined_ctrl_type in self.all_controller_types:
                 running_ctrls.append(defined_ctrl_type)
-        
+
         return running_ctrls
-    
+
     def refresh_control_mode(self):
         self.control_mode = rospy.get_param('realtime_loop/default_control_mode', 'FORCE')
 
