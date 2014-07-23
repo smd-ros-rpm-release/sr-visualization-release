@@ -1,0 +1,12 @@
+Source: ros-indigo-sr-gui-movement-recorder
+Section: misc
+Priority: extra
+Maintainer: Shadow Robot's software team <software@shadowrobot.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin, ros-indigo-controller-manager-msgs, ros-indigo-rospy, ros-indigo-rqt-gui, ros-indigo-rqt-gui-py, ros-indigo-sr-hand, ros-indigo-sr-visualization-icons
+Homepage: http://ros.org/wiki/sr_gui_movement_recorder
+Standards-Version: 3.9.2
+
+Package: ros-indigo-sr-gui-movement-recorder
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-controller-manager-msgs, ros-indigo-rospy, ros-indigo-rqt-gui, ros-indigo-rqt-gui-py, ros-indigo-sr-hand, ros-indigo-sr-visualization-icons
+Description: A GUI plugin for recording and replaying movements.
