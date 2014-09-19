@@ -1,3 +1,37 @@
+## sr_visualization (hydro) - 1.3.4-0
+
+The packages in the `sr_visualization` repository were released into the `hydro` distro by running `/usr/bin/bloom-release sr_visualization --track hydro --rosdistro hydro` on `Fri, 19 Sep 2014 14:11:58 -0000`
+
+These packages were released:
+- `sr_gui_bootloader`
+- `sr_gui_change_controllers`
+- `sr_gui_change_muscle_controllers`
+- `sr_gui_controller_tuner`
+- `sr_gui_grasp_controller`
+- `sr_gui_hand_calibration`
+- `sr_gui_joint_slider`
+- `sr_gui_motor_resetter`
+- `sr_gui_movement_recorder`
+- `sr_gui_muscle_driver_bootloader`
+- `sr_gui_self_test`
+- `sr_visualization`
+- `sr_visualization_icons`
+
+Version of package(s) in repository `sr_visualization`:
+- upstream repository: https://github.com/shadow-robot/sr-visualization.git
+- release repository: https://github.com/shadow-robot/sr-visualization-release.git
+- rosdistro version: `1.3.0-4`
+- old version: `1.3.0-4`
+- new version: `1.3.4-0`
+
+Versions of tools used:
+- bloom version: `0.5.11`
+- catkin_pkg version: `0.2.4`
+- rosdep version: `0.10.30`
+- rosdistro version: `0.3.5`
+- vcstools version: `0.1.35`
+
+
 ## sr_visualization (indigo) - 1.3.1-0
 
 The packages in the `sr_visualization` repository were released into the `indigo` distro by running `/usr/bin/bloom-release --rosdistro indigo --track indigo sr_visualization --new-track` on `Wed, 23 Jul 2014 15:54:13 -0000`
