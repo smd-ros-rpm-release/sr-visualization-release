@@ -1,0 +1,31 @@
+ros-hydro-sr-visualization-icons (1.3.4-0quantal) quantal; urgency=high
+
+  * Updated docstrings. Fixed build failure at ros jenkins server
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Thu, 18 Sep 2014 23:00:00 -0000
+
+ros-hydro-sr-visualization-icons (1.3.3-0quantal) quantal; urgency=high
+
+  * Non-existent version (used to avoid version number conflict with indigo).
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Thu, 18 Sep 2014 23:00:00 -0000
+
+ros-hydro-sr-visualization-icons (1.3.2-0quantal) quantal; urgency=high
+
+  * Non-existent version (used to avoid version number conflict with indigo).
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Thu, 18 Sep 2014 23:00:00 -0000
+
+ros-hydro-sr-visualization-icons (1.3.1-0quantal) quantal; urgency=high
+
+  * Non-existent version (used to avoid version number conflict with indigo).
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Thu, 18 Sep 2014 23:00:00 -0000
+
+ros-hydro-sr-visualization-icons (1.3.0-0quantal) quantal; urgency=high
+
+  * first hydro release
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Mon, 17 Feb 2014 00:00:00 -0000
+
+
