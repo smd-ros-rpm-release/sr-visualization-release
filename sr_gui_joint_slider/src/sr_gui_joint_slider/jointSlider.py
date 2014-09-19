@@ -17,13 +17,20 @@
 #
 
 import os
+
+import roslib
+roslib.load_manifest('sr_gui_joint_slider')
 import rospy
 
+from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 
-from PyQt4 import QtCore, Qt
-from QtGui import QFrame
-from controller_manager_msgs.srv import ListControllers
+#import xml.dom.minidom
+from xml.etree import ElementTree as ET
+
+from PyQt4 import QtCore, QtGui, Qt
+from QtGui import QShortcut, QMessageBox, QFrame
+from pr2_mechanism_msgs.srv import ListControllers, SwitchController, LoadController
 from sr_robot_msgs.msg import sendupdate, joint
 from std_msgs.msg import Float64
 from math import radians, degrees
@@ -100,23 +107,23 @@ class ExtendedSlider(QFrame):
 
     def update(self):
         raise NotImplementedError, "Virtual method, please implement."
-
+    
     def refresh(self):
         raise NotImplementedError, "Virtual method, please implement."
 
     def checkbox_click(self, value):
         self.is_selected = value
-
+    
     def set_slider_behaviour(self):
         raise NotImplementedError, "Virtual method, please implement."
-
+    
     def set_new_slider_behaviour(self, tracking):
         if tracking:
             self.pos_slider_tracking_behaviour = True
         else:
             self.pos_slider_tracking_behaviour = False
         self.set_slider_behaviour()
-
+    
 
 class EtherCATHandSlider(ExtendedSlider):
     """
@@ -138,12 +145,7 @@ class EtherCATHandSlider(ExtendedSlider):
             self.min_label.setText(str(self.joint.controller_list[self.current_controller_index].min))
             self.max_label.setText(str(self.joint.controller_list[self.current_controller_index].max))
 
-            self.pub = rospy.Publisher(
-                    self.joint.controller_list[self.current_controller_index].command_topic,
-                    Float64,
-                    queue_size=1,
-                    latch=True
-            )
+            self.pub = rospy.Publisher(self.joint.controller_list[self.current_controller_index].command_topic, Float64, latch=True)
             self.set_slider_behaviour()
 
     def get_current_joint_controller(self, current_controllers):
@@ -154,7 +156,6 @@ class EtherCATHandSlider(ExtendedSlider):
             for controller in current_controllers:
                 if (controller.find(self.joint.name.lower() + '_' + joint_controller.name) != -1):
                     return index
-        rospy.loginfo("Couldn't get controller for joint %s", self.joint.name.lower())
         return -1
 
     def get_current_controllers(self):
@@ -162,26 +163,30 @@ class EtherCATHandSlider(ExtendedSlider):
         @return: list of current controllers
         """
         success = True
-        list_controllers = rospy.ServiceProxy('controller_manager/list_controllers', ListControllers)
+        list_controllers = rospy.ServiceProxy('pr2_controller_manager/list_controllers', ListControllers)
         try:
             resp1 = list_controllers()
         except rospy.ServiceException:
             success = False
 
+        current_controllers = []
+
         if success:
-            return [c.name for c in resp1.controller if c.state == "running"]
+            all_loaded_controllers = resp1.controllers
+            for state,tmp_contrl in zip(resp1.state,resp1.controllers):
+                if state == "running":
+                    current_controllers.append(tmp_contrl)
         else:
-            rospy.loginfo("Couldn't get list of controllers from controller_manager/list_controllers service")
-            return []
+            rospy.loginfo("Couldn't get list of controllers from pr2_controller_manager/list_controllers service")
+
+        return current_controllers
 
     def sendupdate(self, value):
         if (self.current_controller_index == -1):
             self.initialize_controller()
 
         if (self.current_controller_index != -1):
-            if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity")\
-                or (self.joint.controller_list[self.current_controller_index].name == "position")\
-                or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
+            if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity") or (self.joint.controller_list[self.current_controller_index].name == "position") or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
                 self.pub.publish(radians(float(value)))
             elif self.joint.controller_list[self.current_controller_index].name == "velocity":
                 self.pub.publish(float(value) / 100.0)
@@ -190,9 +195,7 @@ class EtherCATHandSlider(ExtendedSlider):
 
     def update(self):
         try:
-            if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity")\
-                or (self.joint.controller_list[self.current_controller_index].name == "position")\
-                or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
+            if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity") or (self.joint.controller_list[self.current_controller_index].name == "position")  or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
                 self.current_value = round(degrees(self.robot_lib.get_position(self.joint.name)),1)
             elif (self.joint.controller_list[self.current_controller_index].name == "velocity"):
                 self.current_value = round(self.robot_lib.get_velocity(self.joint.name),1)
@@ -200,9 +203,7 @@ class EtherCATHandSlider(ExtendedSlider):
                 self.current_value = round(self.robot_lib.get_effort(self.joint.name),1)
             self.value.setText("Val: " + str(self.current_value))
             if self.first_update_done == False:
-                if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity")\
-                    or (self.joint.controller_list[self.current_controller_index].name == "position")\
-                    or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
+                if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity") or (self.joint.controller_list[self.current_controller_index].name == "position")  or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
                     self.slider.setSliderPosition(self.current_value)
                     self.slider.setValue(self.current_value)
                     self.target.setText("Tgt: " + str(self.current_value))
@@ -211,15 +212,13 @@ class EtherCATHandSlider(ExtendedSlider):
                 self.first_update_done = True
         except:
             pass
-
+        
     def refresh(self):
         """
-        Refresh the current position of the slider with index = self.current_controller_index
+        Refresh the current position of the slider with index = self.current_controller_index 
         """
         if (self.current_controller_index != -1):
-            if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity")\
-                or (self.joint.controller_list[self.current_controller_index].name == "position")\
-                or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
+            if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity") or (self.joint.controller_list[self.current_controller_index].name == "position") or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
                 self.slider.setSliderPosition(self.current_value)
                 self.slider.setValue(self.current_value)
                 self.target.setText("Tgt: " + str(self.current_value))
@@ -228,9 +227,7 @@ class EtherCATHandSlider(ExtendedSlider):
         """
         Set the behaviour of the slider according to controller type
         """
-        if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity")\
-            or (self.joint.controller_list[self.current_controller_index].name == "position")\
-            or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
+        if (self.joint.controller_list[self.current_controller_index].name == "mixed_position_velocity") or (self.joint.controller_list[self.current_controller_index].name == "position") or (self.joint.controller_list[self.current_controller_index].name == "muscle_position"):
             if self.pos_slider_tracking_behaviour:
                 self.slider.setTracking(True)
             else:
@@ -243,11 +240,10 @@ class EtherCATHandSlider(ExtendedSlider):
             self.connect(self.slider, QtCore.SIGNAL('sliderReleased()'), self.on_slider_released)
 
     def on_slider_released(self):
-        if (self.joint.controller_list[self.current_controller_index].name == "effort")\
-            or (self.joint.controller_list[self.current_controller_index].name == "velocity"):
+        if (self.joint.controller_list[self.current_controller_index].name == "effort") or (self.joint.controller_list[self.current_controller_index].name == "velocity"):
             self.slider.setSliderPosition(0)
             self.changeValue(0)
-
+        
 
 class CANHandSlider(ExtendedSlider):
     """
@@ -274,7 +270,7 @@ class CANHandSlider(ExtendedSlider):
                 self.first_update_done = True
         except:
             pass
-
+    
     def refresh(self):
         """
         Refresh the current position of the slider
@@ -315,7 +311,7 @@ class ArmSlider(ExtendedSlider):
                 self.first_update_done = True
         except:
             pass
-
+    
     def refresh(self):
         """
         Refresh the current position of the slider
@@ -323,7 +319,7 @@ class ArmSlider(ExtendedSlider):
         self.slider.setSliderPosition(self.current_value)
         self.slider.setValue(self.current_value)
         self.target.setText("Tgt: " + str(self.current_value))
-
+    
     def set_slider_behaviour(self):
         if self.pos_slider_tracking_behaviour:
             self.slider.setTracking(True)
@@ -382,8 +378,7 @@ class EtherCATSelectionSlider(SelectionSlider):
         """
         self.slider.setTracking(True)
         for slider in self.plugin_parent.sliders:
-            if (slider.joint.controller_list[slider.current_controller_index].name == "effort")\
-                or (slider.joint.controller_list[slider.current_controller_index].name == "velocity"):
+            if (slider.joint.controller_list[slider.current_controller_index].name == "effort")  or (slider.joint.controller_list[slider.current_controller_index].name == "velocity"):
                 self.connect(self.slider, QtCore.SIGNAL('sliderReleased()'), self.on_slider_released)
                 self.slider.setSliderPosition(50)
                 self.current_value = 50
@@ -406,8 +401,7 @@ class EtherCATSelectionSlider(SelectionSlider):
     def on_slider_released(self):
         for slider in self.plugin_parent.sliders:
             if slider.is_selected:
-                if (slider.joint.controller_list[slider.current_controller_index].name == "effort")\
-                    or (slider.joint.controller_list[slider.current_controller_index].name == "velocity"):
+                if (slider.joint.controller_list[slider.current_controller_index].name == "effort") or (slider.joint.controller_list[slider.current_controller_index].name == "velocity"):
                     slider.slider.setSliderPosition(0)
                     slider.changeValue(0)
         self.slider.setSliderPosition(50)

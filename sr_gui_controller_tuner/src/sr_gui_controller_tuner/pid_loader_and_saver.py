@@ -16,11 +16,9 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import rospy
-import os
-import yaml
-import rospkg
+import rospy, os
 
+import yaml
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
