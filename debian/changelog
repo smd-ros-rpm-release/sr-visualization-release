@@ -1,0 +1,34 @@
+ros-hydro-sr-gui-change-muscle-controllers (1.3.4-0precise) precise; urgency=high
+
+  * updated descriptions in package.xml files to appear better in wiki pages
+  * Updated docstrings. Fixed build failure at ros jenkins server
+  * added icons in dependencies
+  * Contributors: shadowmanos
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Thu, 18 Sep 2014 23:00:00 -0000
+
+ros-hydro-sr-gui-change-muscle-controllers (1.3.3-0precise) precise; urgency=high
+
+  * Non-existent version (used to avoid version number conflict with indigo).
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Thu, 18 Sep 2014 23:00:00 -0000
+
+ros-hydro-sr-gui-change-muscle-controllers (1.3.2-0precise) precise; urgency=high
+
+  * Non-existent version (used to avoid version number conflict with indigo).
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Thu, 18 Sep 2014 23:00:00 -0000
+
+ros-hydro-sr-gui-change-muscle-controllers (1.3.1-0precise) precise; urgency=high
+
+  * Non-existent version (used to avoid version number conflict with indigo).
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Thu, 18 Sep 2014 23:00:00 -0000
+
+ros-hydro-sr-gui-change-muscle-controllers (1.3.0-0precise) precise; urgency=high
+
+  * first hydro release
+
+ -- Shadow Robot's software team <software@shadowrobot.com>  Mon, 17 Feb 2014 00:00:00 -0000
+
+
